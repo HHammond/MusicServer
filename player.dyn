@@ -1,0 +1,286 @@
+
+
+
+
+
+<!doctype html>
+<head>
+<meta http-equiv="Content-Type" content="text/html;charset=utf-8"/>
+<title> [$pageTitle$] </title>
+
+<script type="text/javascript">
+
+songs = $SongContent$;
+
+list = new Array();
+history = new Array();
+currentsong = 1;
+
+randomState = true;
+
+
+
+function init(){
+
+
+	document.getElementById('play').hidden = true;
+	loadAlpha();
+
+	txt = "";
+	lastLetter = ' ';
+	for(i=0; i<songs.length;i++){
+		song = new Object();
+		
+		song.title = songs[i][0];
+		song.album = songs[i][1];
+		song.artist = songs[i][2];
+		song.id = songs[i][3];
+
+		first = song.artist.charAt(0);
+		if(first != lastLetter){
+			txt+= "<a href='#"+first+"' name='"+first+"'></a>";
+			lastLetter = first;
+		}
+
+		txt += "<div class='songLink'>"
+		txt += "<a href='/stream/song/"+song.id+"'>Download</a><div style='display:inline-block;width:100px'></div>";
+		txt += "<a href='javascript:newSong("+i+");'>";
+		
+		txt += "<span class='title'>" + song.title+"</span>";
+		txt += "<span class='album'>" + song.album+"</span>";
+		txt += "<span class='artist'>"+ song.artist+"</span>";
+		
+		
+		txt += "</a>";
+		txt +="</div>"
+
+		list.push(song);
+	}
+
+	songlist = document.getElementById('songlist');
+	songlist.innerHTML = txt;
+}
+
+
+
+
+function populateSongList(){
+	txt = ""
+	
+	lastLetter = ''
+	for(i=0; i < list.length;i++){
+
+
+		first = list[i].artist.charAt(0);
+		if(first != lastLetter){
+			txt+= "<a href='#"+first+"' name='"+first+"'></a>";
+			lastLetter = first;
+		}
+
+		txt += "<div class='songLink'>"
+		txt += "<a href='/stream/song/"+list[i].id+"'>Download</a><div style='display:inline-block;width:100px'></div>";
+		txt += "<a href='javascript:newSong("+i+");'>";
+		
+		txt += "<span class='title'>" + list[i].title+"</span>";
+		txt += "<span class='album'>" + list[i].album+"</span>";
+		txt += "<span class='artist'>"+ list[i].artist+"</span>";
+		
+		
+		txt += "</a>";
+		txt +="</div>"
+	}
+
+	songlist = document.getElementById('songlist');
+	songlist.innerHTML = txt;
+
+}
+
+function newSong(id){
+	
+	document.body.removeChild(document.getElementById('musicbox'));
+	def(id);
+
+	if( currentsong != id && history[history.length-1] != id){
+		history.push(id);
+	}
+
+	currentsong = id;
+}
+
+function swapPlay(){
+	if( document.getElementById('pause').hidden == true){
+		document.getElementById('pause').hidden = false;
+		document.getElementById('play').hidden = true;
+	}
+	else{
+		document.getElementById('pause').hidden = true;
+		document.getElementById('play').hidden = false;
+	}
+}
+
+function play(){
+	document.getElementById('musicbox').play();
+	swapPlay();
+}
+
+function pause(){
+	document.getElementById('musicbox').pause();
+	swapPlay();
+}
+function prev(){
+	newSong(history.pop());
+}
+function next(){
+	if(randomState){
+		newSong( Math.floor(Math.random()*list.length) );
+	}
+	else{
+		newSong( (currentsong+1)%list.length);
+	}
+}
+function random(){
+	randomState = !randomState;
+	document.getElementById('randomState').innerHTML = (randomState) ? 'ON' : 'OFF';
+}
+
+function loadAlpha(){
+	str = '';
+	for( i = 'A'.charCodeAt(0); i < 'Z'.charCodeAt(0); i++){
+		l = String.fromCharCode(i);
+		str+="<a href='#"+l+"'>"+l+"</a>";
+	}
+	document.getElementById('alphabet').innerHTML = str;
+}
+
+</script>
+
+<style type='text/css'>
+
+html, body{
+	padding:0px;
+	margin:0px;
+	min-width:100%;
+	min-height:100%;
+	font-family: arial 'helvitica' 'helvetica neue' ;
+}
+
+#songlist{
+	width: 100%;
+	display: inline-block;
+	margin-bottom: 90px;
+}
+
+.songLink{
+	margin:3px;
+}
+.songLink a{
+	color:#666;
+	text-decoration: none;
+}
+.songLink a:hover{
+	color:#000;
+}
+
+.songLink a .artist, .songLink a .album, .songLink a .title{
+	width: 240px;
+	display: inline-block;
+	white-space: nowrap;
+	margin-left: 5px;
+	margin-right:5px;
+	overflow:auto;
+}
+.songLink:hover{
+	background: #f0f0f0;
+}
+
+.songLink span{
+}
+
+.controlButton{
+	display: inline-block;
+	width:44px;
+	height: 43px;
+	margin:5px;
+	background: center center no-repeat;
+}
+#controls #prev .controlButton{
+	background-image: url('prev.png');
+}
+#controls #next .controlButton{
+	background-image: url('next.png');
+}
+#controls #pause .controlButton{
+	background-image: url('pause.png');
+}
+#controls #play .controlButton{
+	background-image: url('play.png');
+}
+#controls{
+	height:80px;
+	width:100%;
+	margin-left: auto;
+	margin-right: auto;
+	display: block;
+	text-align: center;
+	vertical-align: center;
+	background: center center repeat-x url('bg.png');
+	border-top: 1px solid #000;
+	position: fixed;
+	bottom:0px;
+	z-index: 100;
+}
+
+#alphabet a{
+	width: 1.0em;
+	display: inline-block;
+	text-decoration: none;
+	color:#666;
+	text-align: center;
+	font-size: smaller;
+}
+</style>
+
+<body onload="init();def(100)">
+
+<div id='songlist'>Loading songlist...</div>
+
+<div id='controls'>
+<a href="javascript:prev();" id='prev'><div class='controlButton'></div></a>
+<a href="javascript:pause();" id='pause'><div class='controlButton'></div></a>
+<a href="javascript:play();" id='play'><div class='controlButton'></div></a>
+<a href="javascript:next();" id='next'><div class='controlButton'></div></a>
+
+<div id='alphabet'></div>
+<!--
+<br />
+<a href="javascript:random();">Random <span id='randomState'>OFF</span></a>
+<br />
+<div id='songtitle'></div>
+-->
+</div>
+
+
+
+
+
+<script type="text/javascript"><!--
+
+function def(num){
+	
+	num = parseInt(num);
+	num = list[num].id;
+	var audio = document.createElement("audio");
+	audio.name = audio.id = 'musicbox';
+	audio.setAttribute('src', '/stream/song/'+num);
+	audio.setAttribute('autoplay','autoplay');
+	audio.setAttribute('onended','next();');
+	audio.setAttribute('preload','auto');
+	audio.play();
+	document.body.appendChild(audio);	
+	//songTitle();
+	//updateRandomState();
+}
+-->
+</script>
+</body>
+</html>

@@ -1,0 +1,219 @@
+<!--
+
+	Copyright (C) 2011  Henry Hammond
+	email: HenryHHammond92@gmail.com
+	
+	This program is free software: you can redistribute it and/or modify
+	it under the terms of the GNU Lesser General Public License as published by
+	the Free Software Foundation, either version 3 of the License, or  any later
+	version.
+	
+	This program is distributed in the hope that it will be useful,
+	but WITHOUT ANY WARRANTY; without even the implied warranty of
+	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+	GNU General Public License for more details.
+	
+	For a copy of the GNU Lesser General Public License, see
+	<http://www.gnu.org/licenses/>.
+
+-->
+
+<!doctype html>
+<head>
+<meta http-equiv="Content-Type" content="text/html;charset=utf-8"/>
+<title>Music Player</title>
+
+<script type='text/javascript'>
+var songs = [$SongContent$];
+</script>
+
+<script type='text/javascript'>
+
+var songsPlayed = new Array();
+var currentsong = Math.floor(Math.random()*songs.length);
+var randomState = 1;
+
+function newSong(num){
+	
+	document.body.removeChild(document.getElementById('musicbox'));
+	def(num);
+	currentsong = num;
+}
+function next(){
+	songsPlayed.push(currentsong);
+	if (randomState==1){
+		currentsong = Math.floor(Math.random()*songs.length)
+		newSong(currentsong);
+	}
+	else{
+		newSong(++currentsong);
+	}
+}
+function prev(){
+	currentsong = songsPlayed.pop();
+	newSong(currentsong);
+}
+
+function play(){
+	document.getElementById('musicbox').play();
+}
+
+function pause(){
+	document.getElementById('musicbox').pause();
+}
+
+function songTitle(){
+	song = songInfo(currentsong);
+	
+	txt = "Artist: "+song.artist+" - Album: "+song.album+" - Title: "+song.title;
+	document.getElementById('songtitle').innerHTML =txt;
+}
+function outputSongs(){
+	txt = '';
+	for(var i=0; i < songs.length;i++){
+		s = songInfo(i);
+		
+		if(i>0){
+			if(s.artist.charAt(0) != songInfo(i-1).artist.charAt(0)){
+				txt+="<hr /><a href='#"+s.artist.charAt(0)+"' name='"+s.artist.charAt(0)+"'>"+s.artist.charAt(0)+"</a><hr />";
+			}
+		}
+		else if(i==0){
+			
+		}
+		
+		txt+='<a href="/stream/song/'+songs[i]+'">Download</a> - <a href="javascript:newSong('+i+');">'+s.artist + "-" + s.album +"-"+ s.title +'</a><br />';
+	}
+	document.getElementById('songlist').innerHTML = txt;	
+}
+
+function random(){
+	randomState ++;
+	randomState%=2;
+	updateRandomState();
+}
+
+function updateRandomState(){
+	document.getElementById('randomState').innerHTML = (randomState == 1) ? 'ON' : 'OFF';
+}
+
+function songInfo(id){
+	str = songs[id].split('/');
+	
+	var song = new Object();
+	song.url = songs[id];
+	if(str.length == 3){
+		song.artist = str[0];
+		song.album = str[1];
+		song.title = str[2];
+		
+	} else if(str.length > 3){
+		song.artist = str[0];
+		var a = "";
+		for (var i=1;i<str.length-1;i++){
+			a+=str[i];
+		}
+		song.album = a;
+		song.title = str[str.length-1];
+	}
+	if(str.length == 1){
+		song.album = '';
+		song.artist = '';
+		song.title = str[0];
+	}
+	if(str.length == 2){
+		song.album = '';
+		song.artist = str[0];
+		song.title = str[1];
+	}
+	
+
+	return song;
+}
+</script>
+
+<style type='text/css'>
+body{
+	background:#fff;
+}
+#controls{
+	position: fixed;
+	bottom: 0;
+	left:0;
+	right:0;
+	height: 60px;
+	min-width: 100%;
+	background-color: rgba(0, 0, 0, 0.7);
+	border-top: 1px solid #a1a1a1;
+	text-align:center;
+	color: #aaa;
+}
+#controls a{
+	color: #aaa;
+	text-decoration: none;
+}
+#songlist{
+	font:larger;
+	font-family: "Lucida Grande", Lucida, Verdana, sans-serif;
+	margin-bottom:80px;
+	
+}
+#songlist a{
+	color: #333;
+	text-decoration: none;
+}
+#songlist a:hover{
+	background:#eee;
+	text-decoration: none;
+}
+#controls a{
+	color: #fff;
+	width:3em;
+	padding:2px;
+	margin:3px;
+}
+#controls a:hover{
+	color: #999;
+}
+</style>
+
+</head>
+
+
+<body onload="def(currentsong);outputSongs();">
+
+<div id='controls'>
+<a href="javascript:prev();">&lt;&lt;</a>
+<a href="javascript:pause();">Pause</a>
+<a href="javascript:play();">Play</a>
+<a href="javascript:next();">&gt;&gt;</a>
+<br />
+<a href="javascript:random();">Random <span id='randomState'>OFF</span></a>
+<br />
+<div id='songtitle'></div>
+</div>
+
+<div id='songlist'></div>
+
+<script type="text/javascript"><!--
+
+function def(num){
+	num = parseInt(num);
+	var audio = document.createElement("audio");
+	audio.name = audio.id = 'musicbox';
+	audio.setAttribute('src', '/stream/song/'+songs[num]);
+	audio.setAttribute('autoplay','autoplay');
+	audio.setAttribute('onended','next();');
+	audio.setAttribute('preload','auto');
+	audio.play();
+	document.body.appendChild(audio);	
+	songTitle();
+	updateRandomState();
+}
+
+
+-->
+</script>
+
+</body>
+</html>
